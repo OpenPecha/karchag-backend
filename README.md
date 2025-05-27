@@ -1,3 +1,3 @@
 ## 📊 ER Diagram
 
-![ER Diagram](assets/er-diagram.png)
+![ER Diagram](assets/schema.png)

@@ -1,15 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from typing import List
 
 from database import get_db
-from models import MainCategory, SubCategory, KarchagText, TextSummary
+from models import MainCategory, SubCategory, KarchagText, TextSummary,YesheDESpan,Volume
 from schemas import (
-    MainCategoryResponse, MainCategoryWithSubCategories, MainCategoryUpdate,
-    SubCategoryResponse, SubCategoryWithTexts, SubCategoryUpdate,
-    KarchagTextResponse, KarchagTextUpdate,
-    TextSummaryResponse, TextSummaryUpdate
+    MainCategoryResponse, MainCategoryWithSubCategories, MainCategoryCreate,
+    SubCategoryResponse, SubCategoryWithTexts, SubCategoryCreate,
+    KarchagTextResponse,KarchagTextCreate,
+    
 )
 
 router = APIRouter()
@@ -174,172 +174,126 @@ async def get_text(category_id: int, sub_category_id: int, text_id: int, db: Ses
         raise HTTPException(status_code=404, detail="Text not found")
          
     return text
+
 # POST Endpoints (Updates)
-'''
-@router.post("/category/{category_id}", response_model=MainCategoryResponse, tags=["Categories"])
-async def update_category(
-    category_id: int, 
-    category_update: MainCategoryUpdate, 
+
+# Create main category
+@router.post("/category", response_model=MainCategoryResponse, status_code=201)
+async def create_category(
+    category_data: MainCategoryCreate, 
     db: Session = Depends(get_db)
 ):
-    """
-    Update a main category.
-    
-    Args:
-        category_id: The ID of the category to update
-        category_update: The updated category data
-        
-    Returns:
-        The updated category information
-        
-    Raises:
-        HTTPException: 404 if category not found
-    """
-    category = db.query(MainCategory).filter(MainCategory.id == category_id).first()
-    
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    
-    # Update fields
-    for field, value in category_update.model_dump(exclude_unset=True).items():
-        setattr(category, field, value)
-    
-    category.updated_at = func.now()
+    db_category = MainCategory(**category_data.dict())
+    db.add(db_category)
     db.commit()
-    db.refresh(category)
-    
-    return category
+    db.refresh(db_category)
+    return db_category
 
-@router.post("/category/{category_id}/sub-category/{sub_category_id}", response_model=SubCategoryResponse, tags=["Sub-Categories"])
-async def update_sub_category(
+# Create sub-category under a category
+@router.post("/category/{category_id}/sub-category", response_model=SubCategoryResponse, status_code=201)
+async def create_sub_category(
+    category_id: int,
+    sub_category_data: SubCategoryCreate,
+    db: Session = Depends(get_db)
+):
+    # Verify parent category exists
+    if not db.query(MainCategory).filter(MainCategory.id == category_id).first():
+        raise HTTPException(status_code=404, detail="Parent category not found")
+    
+    db_sub_category = SubCategory(**sub_category_data.dict(), main_category_id=category_id)
+    db.add(db_sub_category)
+    db.commit()
+    db.refresh(db_sub_category)
+    return db_sub_category
+
+
+@router.post("/category/{category_id}/sub-category/{sub_category_id}/text",response_model=KarchagTextResponse, tags=["Texts"])
+async def create_text_with_relations(
     category_id: int,
     sub_category_id: int,
-    sub_category_update: SubCategoryUpdate,
+    text_data: KarchagTextCreate,
     db: Session = Depends(get_db)
 ):
     """
-    Update a sub-category.
+    Create a new text with optional text_summary, yeshe_de_spans, and volumes in a single request.
     
-    Args:
-        category_id: The ID of the main category
-        sub_category_id: The ID of the sub-category to update
-        sub_category_update: The updated sub-category data
-        
-    Returns:
-        The updated sub-category information
-        
-    Raises:
-        HTTPException: 404 if sub-category not found
+    Example payload:
+    {
+        "english_title": "Sample Text",
+        "tibetan_title": "Tibetan Title",
+        "sub_category_id": 1,
+        "text_summary": {
+            "purpose_english": "This is the purpose",
+            "text_summary_english": "This is the summary"
+        },
+        "yeshe_de_spans": [
+            {
+                "volumes": [
+                    {
+                        "volume_number": "Vol 1",
+                        "start_page": "1",
+                        "end_page": "50",
+                        "order_index": 1
+                    },
+                    {
+                        "volume_number": "Vol 2", 
+                        "start_page": "51",
+                        "end_page": "100",
+                        "order_index": 2
+                    }
+                ]
+            }
+        ]
+    }
     """
-    sub_category = db.query(SubCategory).filter(
+    
+    # Verify sub_category belongs to category
+    sub_cat = db.query(SubCategory).filter(
         SubCategory.id == sub_category_id,
         SubCategory.main_category_id == category_id
     ).first()
     
-    if not sub_category:
-        raise HTTPException(status_code=404, detail="Sub-category not found")
+    if not sub_cat:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Sub-category {sub_category_id} not found in category {category_id}"
+        )
     
-    # Update fields
-    for field, value in sub_category_update.model_dump(exclude_unset=True).items():
-        setattr(sub_category, field, value)
-    
-    sub_category.updated_at = func.now()
-    db.commit()
-    db.refresh(sub_category)
-    
-    return sub_category
-
-@router.post("/category/{category_id}/sub-category/{sub_category_id}/text/{text_id}", response_model=KarchagTextResponse, tags=["Texts"])
-async def update_text(
-    category_id: int,
-    sub_category_id: int,
-    text_id: int,
-    text_update: KarchagTextUpdate,
-    db: Session = Depends(get_db)
-):
-    """
-    Update a text.
-    
-    Args:
-        category_id: The ID of the main category
-        sub_category_id: The ID of the sub-category
-        text_id: The ID of the text to update
-        text_update: The updated text data
+    try:
+        # Create the main text
+        text_dict = text_data.model_dump(exclude={'text_summary', 'yeshe_de_spans'})
+        text_dict['sub_category_id'] = sub_category_id
         
-    Returns:
-        The updated text information
+        db_text = KarchagText(**text_dict)
+        db.add(db_text)
+        db.flush()  # Get the ID without committing
         
-    Raises:
-        HTTPException: 404 if text not found
-    """
-    # Verify the text exists and belongs to the correct hierarchy
-    text = db.query(KarchagText).join(SubCategory).filter(
-        KarchagText.id == text_id,
-        KarchagText.sub_category_id == sub_category_id,
-        SubCategory.main_category_id == category_id
-    ).first()
-    
-    if not text:
-        raise HTTPException(status_code=404, detail="Text not found")
-    
-    # Update fields
-    for field, value in text_update.model_dump(exclude_unset=True).items():
-        setattr(text, field, value)
-    
-    text.updated_at = func.now()
-    db.commit()
-    db.refresh(text)
-    
-    return text
-
-@router.post("/category/{category_id}/sub-category/{sub_category_id}/text/{text_id}/summary", response_model=TextSummaryResponse, tags=["Text Summaries"])
-async def update_text_summary(
-    category_id: int,
-    sub_category_id: int,
-    text_id: int,
-    summary_update: TextSummaryUpdate,
-    db: Session = Depends(get_db)
-):
-    """
-    Update or create a text summary.
-    
-    Args:
-        category_id: The ID of the main category
-        sub_category_id: The ID of the sub-category
-        text_id: The ID of the text
-        summary_update: The updated summary data
+        # Create text summary if provided
+        if text_data.text_summary:
+            summary_dict = text_data.text_summary.model_dump()
+            summary_dict['text_id'] = db_text.id
+            db_summary = TextSummary(**summary_dict)
+            db.add(db_summary)
         
-    Returns:
-        The updated or created text summary
+        # Create yeshe_de_spans with volumes if provided
+        for span_data in text_data.yeshe_de_spans:
+            # Create YesheDESpan
+            db_span = YesheDESpan(text_id=db_text.id)
+            db.add(db_span)
+            db.flush()  # Get the span ID
+            
+            # Create volumes for this span
+            for volume_data in span_data.volumes:
+                volume_dict = volume_data.model_dump()
+                volume_dict['yeshe_de_span_id'] = db_span.id
+                db_volume = Volume(**volume_dict)
+                db.add(db_volume)
         
-    Raises:
-        HTTPException: 404 if text not found
-    """
-    # Verify the text exists and belongs to the correct hierarchy
-    text = db.query(KarchagText).join(SubCategory).filter(
-        KarchagText.id == text_id,
-        KarchagText.sub_category_id == sub_category_id,
-        SubCategory.main_category_id == category_id
-    ).first()
-    
-    if not text:
-        raise HTTPException(status_code=404, detail="Text not found")
-    
-    # Check if summary exists
-    summary = db.query(TextSummary).filter(TextSummary.text_id == text_id).first()
-    
-    if summary:
-        # Update existing summary
-        for field, value in summary_update.model_dump(exclude_unset=True).items():
-            setattr(summary, field, value)
-        summary.updated_at = func.now()
-    else:
-        # Create new summary
-        summary_data = summary_update.model_dump(exclude_unset=True)
-        summary = TextSummary(text_id=text_id, **summary_data)
-        db.add(summary)
-    
-    db.commit()
-    db.refresh(summary)
-    
-    return summary'''
+        db.commit()
+        
+        # Return the created text with all relationships
+        return await get_text(category_id, sub_category_id, db_text.id, db)
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error creating text: {str(e)}")

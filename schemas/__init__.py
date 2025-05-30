@@ -1,5 +1,5 @@
 # schemas/__init__.py
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import List, Optional
 
@@ -28,11 +28,19 @@ class TranslationTypeResponse(TranslationTypeBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
+# Volume schemas - for nested creation
 class VolumeBase(BaseModel):
     volume_number: Optional[str] = None
     start_page: Optional[str] = None
     end_page: Optional[str] = None
     order_index: int = 0
+
+class VolumeCreate(VolumeBase):
+    """For creating volume within YesheDESpan (no yeshe_de_span_id needed)"""
+    pass
+
+class VolumeUpdate(VolumeBase):
+    pass
 
 class VolumeResponse(VolumeBase):
     id: int
@@ -41,17 +49,25 @@ class VolumeResponse(VolumeBase):
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
-# YesheDESpan schemas
+# YesheDESpan schemas - for nested creation
 class YesheDESpanBase(BaseModel):
     pass
 
-class YesheDESpanResponse(YesheDESpanBase):
+class YesheDESpanCreate(YesheDESpanBase):
+    """For creating YesheDESpan within Text (no text_id needed)"""
+    volumes: List[VolumeCreate] = Field(default_factory=list)
+
+class YesheDESpanUpdate(YesheDESpanBase):
+    volumes: Optional[List[VolumeCreate]] = None
+
+class YesheDESpanResponse(BaseModel):
     id: int
     text_id: int
     created_at: datetime
     updated_at: datetime
-    volumes: List[VolumeResponse] = []
+    volumes: List[VolumeResponse] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
+
 
 # Text Summary schemas
 class TextSummaryBase(BaseModel):
@@ -111,9 +127,10 @@ class KarchagTextResponse(KarchagTextBase):
     text_summary: Optional[TextSummaryResponse] = None
     sermon: Optional[SermonResponse] = None
     yana: Optional[YanaResponse] = None
-    yeshe_de_spans: List[YesheDESpanResponse] = [] 
+    yeshe_de_spans: List[YesheDESpanResponse] = []
     translation_type: Optional[TranslationTypeResponse] = None
     model_config = ConfigDict(from_attributes=True)
+
 
 
 # Sub Category schemas

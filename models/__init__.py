@@ -92,7 +92,8 @@ class KarchagText(Base):
     sermon = relationship("Sermon")
     yana = relationship("Yana")
     translation_type = relationship("TranslationType")
-    yeshe_de_spans = relationship("YesheDESpan", back_populates="text") 
+    yeshe_de_spans = relationship("YesheDESpan", back_populates="text",  cascade="all, delete-orphan",
+        lazy="select" ) 
 
 class TextSummary(Base):
     __tablename__ = "text_summaries"
@@ -126,7 +127,7 @@ class YesheDESpan(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    volumes = relationship("Volume", back_populates="yeshe_de_span")
+    volumes = relationship("Volume", back_populates="yeshe_de_span" ,lazy="select")
     text = relationship("KarchagText", back_populates="yeshe_de_spans") 
 
 class Volume(Base):

@@ -149,3 +149,16 @@ erDiagram
     TRANSLATION_TYPES ||--o{ KARCHAG_TEXTS : "referenced by"
     USERS ||--o{ AUDIT_LOGS : "creates"
 ```
+
+
+📌 API Documentation – Swagger UI
+This API follows the OpenAPI specification and provides interactive documentation via Swagger UI.
+
+Base URL: http://localhost:8000
+
+Interactive API docs (Swagger UI):
+➤ http://localhost:8000/docs
+
+Alternative documentation (ReDoc):
+➤ http://localhost:8000/redoc
+

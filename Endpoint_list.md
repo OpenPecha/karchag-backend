@@ -108,11 +108,16 @@ GET /api/audio/categories/{category_id}/subcategories/{sub_category_id}/audio/{a
 ```
 GET /api/video
 - Returns: All available video content
-- Query params: ?page=1&limit=20&category=&lang=en|tb
+- Query params: ?page=1&limit=20&lang=en|tb
 - Response: Video files with metadata
 
 GET /api/video/{video_id}
 - Returns: Specific video details and streaming URL
+- Query params: ?lang=en|tb
+- Response: Video metadata and streaming information
+
+GET /api/video/latest
+- Returns: Latest 5 published videos
 - Query params: ?lang=en|tb
 ```
 
@@ -351,8 +356,11 @@ GET /api/admin/video
 - Query params: ?page=1&limit=20&search=
 - Returns: All video files
 
+GET /api/admin/video/{video_id}
+- Returns: Specific video details for editing
+
 POST /api/admin/video
-- Body: FormData with video file and metadata
+- Body: Complete video data with metadata
 - Returns: Created video record
 
 PUT /api/admin/video/{video_id}
@@ -362,9 +370,12 @@ PUT /api/admin/video/{video_id}
 DELETE /api/admin/video/{video_id}
 - Returns: Success message
 
-POST /api/admin/video/{video_id}/upload
-- Body: FormData with new video file
-- Returns: Updated video with new file
+POST /api/admin/video/{video_id}/publish
+- Body: {"published_date": "2024-01-01T10:00:00Z"}
+- Returns: Published video
+
+POST /api/admin/video/{video_id}/unpublish
+- Returns: Unpublished video
 ```
 
 ### 7. Edition Management

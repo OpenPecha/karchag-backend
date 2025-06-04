@@ -99,8 +99,8 @@ class TextSummaryResponse(TextSummaryBase):
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
-# Karchag Text schemas
-class KarchagTextBase(BaseModel):
+# Kagyur Text schemas
+class KagyurTextBase(BaseModel):
     derge_id: Optional[str] = None
     yeshe_de_id: Optional[str] = None
     tibetan_title: Optional[str] = None
@@ -113,13 +113,13 @@ class KarchagTextBase(BaseModel):
     order_index: int = 0
     is_active: bool = True
 
-class KarchagTextCreate(KarchagTextBase):
+class KagyurTextCreate(KagyurTextBase):
     sub_category_id: int
 
-class KarchagTextUpdate(KarchagTextBase):
+class KagyurTextUpdate(KagyurTextBase):
     pass
 
-class KarchagTextResponse(KarchagTextBase):
+class KagyurTextResponse(KagyurTextBase):
     id: int
     sub_category_id: int
     created_at: datetime
@@ -156,7 +156,7 @@ class SubCategoryResponse(SubCategoryBase):
     model_config = ConfigDict(from_attributes=True)
 
 class SubCategoryWithTexts(SubCategoryResponse):
-    texts: List[KarchagTextResponse] = []
+    texts: List[KagyurTextResponse] = []
 
 # Main Category schemas
 class MainCategoryBase(BaseModel):
@@ -181,3 +181,55 @@ class MainCategoryResponse(MainCategoryBase):
 
 class MainCategoryWithSubCategories(MainCategoryResponse):
     sub_categories: List[SubCategoryResponse] = []
+
+class AudioResponse(BaseModel):
+    id: int
+    text_id: int
+    audio_url: str
+    file_name: str
+    file_size: int
+    duration: int
+    narrator_name_english: Optional[str]
+    narrator_name_tibetan: Optional[str]
+    audio_quality: str
+    audio_language: str
+    is_active: bool
+    order_index: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class NewsResponse(BaseModel):
+    id: int
+    tibetan_title: Optional[str]
+    english_title: Optional[str]
+    tibetan_content: Optional[str]
+    english_content: Optional[str]
+    published_date: Optional[datetime]
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class VideoResponse(BaseModel):
+    id: int
+    tibetan_title: Optional[str]
+    english_title: Optional[str]
+    tibetan_description: Optional[str]
+    english_description: Optional[str]
+    video_url: str
+    published_date: Optional[datetime]
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PaginatedResponse(BaseModel):
+    items: List[dict]
+    total: int
+    page: int
+    limit: int
+    pages: int

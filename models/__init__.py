@@ -33,7 +33,7 @@ class SubCategory(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     main_category = relationship("MainCategory", back_populates="sub_categories")
-    texts = relationship("KarchagText", back_populates="sub_category")
+    texts = relationship("KagyurText", back_populates="sub_category")
 
 class Sermon(Base):
     __tablename__ = "sermons"
@@ -68,8 +68,8 @@ class TranslationType(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-class KarchagText(Base):
-    __tablename__ = "karchag_texts"
+class KagyurText(Base):
+    __tablename__ = "kagyur_texts"
     
     id = Column(Integer, primary_key=True, index=True)
     sub_category_id = Column(Integer, ForeignKey("sub_categories.id"))
@@ -94,12 +94,14 @@ class KarchagText(Base):
     translation_type = relationship("TranslationType")
     yeshe_de_spans = relationship("YesheDESpan", back_populates="text",  cascade="all, delete-orphan",
         lazy="select" ) 
+    audio_files = relationship("KagyurAudio", back_populates="text", cascade="all, delete-orphan",
+        lazy="select")
 
 class TextSummary(Base):
     __tablename__ = "text_summaries"
     
     id = Column(Integer, primary_key=True, index=True)
-    text_id = Column(Integer, ForeignKey("karchag_texts.id"))
+    text_id = Column(Integer, ForeignKey("Kagyur_texts.id"))
     translator_homage_english = Column(Text)
     translator_homage_tibetan = Column(Text)
     purpose_english = Column(Text)
@@ -117,18 +119,18 @@ class TextSummary(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    text = relationship("KarchagText", back_populates="text_summary")
+    text = relationship("kagyurText", back_populates="text_summary")
 
 class YesheDESpan(Base):
     __tablename__ = "yeshe_de_spans"
     
     id = Column(Integer, primary_key=True, index=True)
-    text_id = Column(Integer, ForeignKey("karchag_texts.id"))
+    text_id = Column(Integer, ForeignKey("Kagyur_texts.id"))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     volumes = relationship("Volume", back_populates="yeshe_de_span" ,lazy="select")
-    text = relationship("KarchagText", back_populates="yeshe_de_spans") 
+    text = relationship("KagyurText", back_populates="yeshe_de_spans") 
 
 class Volume(Base):
     __tablename__ = "volumes"
@@ -143,6 +145,53 @@ class Volume(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
     yeshe_de_span = relationship("YesheDESpan", back_populates="volumes")
+
+class KangyurAudio(Base):
+    __tablename__ = "kagyur_audio"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    text_id = Column(Integer, ForeignKey("kagyur_texts.id"))
+    audio_url = Column(String)
+    file_name = Column(String)
+    file_size = Column(Integer)
+    duration = Column(Integer)
+    narrator_name_english = Column(String)
+    narrator_name_tibetan = Column(String)
+    audio_quality = Column(String)
+    audio_language = Column(String)
+    is_active = Column(Boolean, default=True)
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    text = relationship("KagyurText", back_populates="audio_files")
+
+class KangyurNews(Base):
+    __tablename__ = "kagyur_news"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    tibetan_title = Column(String)
+    english_title = Column(String)
+    tibetan_content = Column(Text)
+    english_content = Column(Text)
+    published_date = Column(DateTime(timezone=True))
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class KangyurVideo(Base):
+    __tablename__ = "kangyur_video"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    tibetan_title = Column(String)
+    english_title = Column(String)
+    tibetan_description = Column(Text)
+    english_description = Column(Text)
+    video_url = Column(String)
+    published_date = Column(DateTime(timezone=True))
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class User(Base):
     __tablename__ = "users"

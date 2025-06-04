@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routers import router
+from routers import karchag, news, audio, video
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -27,7 +27,10 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(router, prefix="/api/v1")
+app.include_router(karchag.router, prefix="/api/karchag", tags=["karchag"])
+app.include_router(news.router, prefix="/api/news", tags=["news"])
+app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
+app.include_router(video.router, prefix="/api/video", tags=["video"])
 
 @app.get("/")
 async def root():
@@ -37,6 +40,8 @@ async def root():
         "docs": "/docs",
         "redoc": "/redoc"
     }
+
+
 
 @app.get("/health")
 async def health_check():

@@ -1,5 +1,5 @@
 # schemas/__init__.py
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field,validator
 from datetime import datetime
 from typing import List, Optional
 
@@ -12,6 +12,9 @@ class SermonResponse(SermonBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
+class SermonCreate(SermonBase):
+    pass
+
 class YanaBase(BaseModel):
     name_english: str
     name_tibetan: Optional[str] = None
@@ -20,9 +23,15 @@ class YanaResponse(YanaBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
+class YanaCreate(YanaBase):
+    pass
+
 class TranslationTypeBase(BaseModel):
     name_english: str
     name_tibetan: Optional[str] = None
+
+class TranslationTypeCreate(TranslationTypeBase):
+    pass
 
 class TranslationTypeResponse(TranslationTypeBase):
     id: int
@@ -182,50 +191,143 @@ class MainCategoryResponse(MainCategoryBase):
 class MainCategoryWithSubCategories(MainCategoryResponse):
     sub_categories: List[SubCategoryResponse] = []
 
-class AudioResponse(BaseModel):
+class AudioBase(BaseModel):
+    narrator_name_english: str
+    narrator_name_tibetan: Optional[str] = ""
+    audio_quality: Optional[str] = "standard"
+    audio_language: Optional[str] = "tibetan"
+    order_index: Optional[int] = 0
+    is_active: Optional[bool] = True
+
+class AudioCreate(AudioBase):
+    pass
+
+class AudioUpdate(BaseModel):
+    narrator_name_english: Optional[str] = None
+    narrator_name_tibetan: Optional[str] = None
+    audio_quality: Optional[str] = None
+    audio_language: Optional[str] = None
+    order_index: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class AudioResponse(AudioBase):
     id: int
     text_id: int
     audio_url: str
     file_name: str
     file_size: int
-    duration: int
-    narrator_name_english: Optional[str]
-    narrator_name_tibetan: Optional[str]
-    audio_quality: str
-    audio_language: str
-    is_active: bool
-    order_index: int
+    duration: Optional[int] = None
     created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
 
-class NewsResponse(BaseModel):
+
+class NewsBase(BaseModel):
+    tibetan_title: str
+    english_title: str
+    tibetan_content: str
+    english_content: str
+
+class NewsCreate(NewsBase):
+    published_date: Optional[datetime] = None
+    is_active: Optional[bool] = True
+
+class NewsUpdate(BaseModel):
+    tibetan_title: Optional[str] = None
+    english_title: Optional[str] = None
+    tibetan_content: Optional[str] = None
+    english_content: Optional[str] = None
+    published_date: Optional[datetime] = None
+    is_active: Optional[bool] = None
+
+class NewsPublish(BaseModel):
+    published_date: datetime
+
+class NewsResponse(NewsBase):
     id: int
-    tibetan_title: Optional[str]
-    english_title: Optional[str]
-    tibetan_content: Optional[str]
-    english_content: Optional[str]
-    published_date: Optional[datetime]
+    published_date: Optional[datetime] = None
     is_active: bool
     created_at: datetime
+    updated_at: datetime
     
     class Config:
-        from_attributes = True
+        from_attributes = True 
 
-class VideoResponse(BaseModel):
-    id: int
-    tibetan_title: Optional[str]
-    english_title: Optional[str]
-    tibetan_description: Optional[str]
-    english_description: Optional[str]
+class VideoBase(BaseModel):
+    tibetan_title: str
+    english_title: str
+    tibetan_description: str
+    english_description: str
     video_url: str
-    published_date: Optional[datetime]
+    
+    @validator('video_url')
+    def validate_video_url(cls, v):
+        if not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError('Video URL must start with http:// or https://')
+        return v
+
+class VideoCreate(VideoBase):
+    published_date: Optional[datetime] = None
+    is_active: Optional[bool] = True
+
+class VideoUpdate(BaseModel):
+    tibetan_title: Optional[str] = None
+    english_title: Optional[str] = None
+    tibetan_description: Optional[str] = None
+    english_description: Optional[str] = None
+    video_url: Optional[str] = None
+    published_date: Optional[datetime] = None
+    is_active: Optional[bool] = None
+    
+    @validator('video_url')
+    def validate_video_url(cls, v):
+        if v and not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError('Video URL must start with http:// or https://')
+        return v
+
+class VideoPublish(BaseModel):
+    published_date: datetime
+
+class VideoResponse(VideoBase):
+    id: int
+    published_date: Optional[datetime] = None
     is_active: bool
     created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
+
+class UserBase(BaseModel):
+    username: str
+    email: str
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = True
+    is_admin: Optional[bool] = False
+
+# Properties to receive when creating a new user
+class UserCreate(UserBase):
+    password: str
+
+
+# Properties to receive when updating a user
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None
+    password: Optional[str] = None
+
+
+# Properties to return via API (includes read-only fields)
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+    last_login: Optional[datetime] = None
+
+    class Config:
+        orm_mode = True
 
 class PaginatedResponse(BaseModel):
     items: List[dict]
@@ -233,3 +335,33 @@ class PaginatedResponse(BaseModel):
     page: int
     limit: int
     pages: int
+
+class AudioPaginatedResponse(PaginatedResponse):
+    audio_files: list[AudioResponse]
+
+class NewsPaginatedResponse(PaginatedResponse):
+    news_articles: list[NewsResponse]
+
+class VideoPaginatedResponse(PaginatedResponse):
+    videos: list[VideoResponse]
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    message: str
+    user: UserResponse
+    tokens: dict
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+
+class LogoutResponse(BaseModel):
+    message: str
+
+class PaginatedUsersResponse(BaseModel):
+    users: List[UserResponse]
+    pagination: dict

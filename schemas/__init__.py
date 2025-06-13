@@ -124,9 +124,14 @@ class KagyurTextBase(BaseModel):
 
 class KagyurTextCreate(KagyurTextBase):
     sub_category_id: int
-
+    text_summary: Optional[TextSummaryCreate] = None
+    yeshe_de_spans: List[YesheDESpanCreate] = Field(default_factory=list)
+class KagyurTextCreateRequest(KagyurTextBase):
+    text_summary: Optional[TextSummaryCreate] = None
+    yeshe_de_spans: Optional[List[YesheDESpanCreate]] = Field(default_factory=list)
 class KagyurTextUpdate(KagyurTextBase):
-    pass
+    text_summary: Optional[TextSummaryCreate] = None
+    yeshe_de_spans: Optional[List[YesheDESpanCreate]] = None
 
 class KagyurTextResponse(KagyurTextBase):
     id: int
@@ -154,8 +159,16 @@ class SubCategoryBase(BaseModel):
 class SubCategoryCreate(SubCategoryBase):
     main_category_id: int
 
-class SubCategoryUpdate(SubCategoryBase):
+class SubCategoryCreateRequest(SubCategoryBase):
     pass
+
+class SubCategoryUpdate(BaseModel):
+    name_english: Optional[str] = None
+    name_tibetan: Optional[str] = None
+    description_english: Optional[str] = None
+    description_tibetan: Optional[str] = None
+    order_index: Optional[int] = None
+    is_active: Optional[bool] = None
 
 class SubCategoryResponse(SubCategoryBase):
     id: int
@@ -336,6 +349,61 @@ class PaginatedResponse(BaseModel):
     limit: int
     pages: int
 
+class PaginationResponse(BaseModel):
+    current_page: int
+    total_pages: int
+    total_items: int
+    items_per_page: int
+    has_next: bool
+    has_prev: bool
+
+class TextsListResponse(BaseModel):
+    texts: List[KagyurTextResponse]
+    pagination: PaginationResponse
+
+class FilterOptionsResponse(BaseModel):
+    categories: List[MainCategoryBase]
+    sermons: List[SermonBase]
+    yanas: List[YanaBase]
+    translation_types: List[TranslationTypeBase]
+    language: str  # The language preference used
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# Search request schema (optional - for POST search if needed)
+class SearchRequest(BaseModel):
+    query: Optional[str] = None
+    category_id: Optional[int] = None
+    sermon_id: Optional[int] = None
+    yana_id: Optional[int] = None
+    translation_type_id: Optional[int] = None
+    page: int = 1
+    limit: int = 20
+    language: str = "en"
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# Search suggestion response
+class SearchSuggestionResponse(BaseModel):
+    suggestions: List[str]
+    query: str
+    language: str
+    
+    model_config = ConfigDict(from_attributes=True)
+
+# Stats response schema
+class KarchagStatsResponse(BaseModel):
+    total_texts: int
+    total_categories: int
+    total_sermons: int
+    total_yanas: int
+    total_translation_types: int
+    texts_by_category: List[tuple]  # [(category_name, count), ...]
+    texts_by_yana: List[tuple]      # [(yana_name, count), ...]
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
 class AudioPaginatedResponse(PaginatedResponse):
     audio_files: list[AudioResponse]
 
@@ -365,3 +433,49 @@ class LogoutResponse(BaseModel):
 class PaginatedUsersResponse(BaseModel):
     users: List[UserResponse]
     pagination: dict
+
+# Edition schemas
+class EditionBase(BaseModel):
+    name_english: str
+    name_tibetan: Optional[str] = None
+    description_english: Optional[str] = None
+    description_tibetan: Optional[str] = None
+    abbreviation: Optional[str] = None
+    publisher: Optional[str] = None
+    publication_year: Optional[int] = None
+    location: Optional[str] = None
+    total_volumes: Optional[int] = None
+    order_index: int = 0
+    is_active: bool = True
+
+class EditionCreate(EditionBase):
+    pass
+
+class EditionUpdate(BaseModel):
+    name_english: Optional[str] = None
+    name_tibetan: Optional[str] = None
+    description_english: Optional[str] = None
+    description_tibetan: Optional[str] = None
+    abbreviation: Optional[str] = None
+    publisher: Optional[str] = None
+    publication_year: Optional[int] = None
+    location: Optional[str] = None
+    total_volumes: Optional[int] = None
+    order_index: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class EditionResponse(EditionBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class EditionPaginatedResponse(BaseModel):
+    editions: List[EditionResponse]
+    total: int
+    page: int
+    limit: int
+    pages: int
+    
+    model_config = ConfigDict(from_attributes=True)

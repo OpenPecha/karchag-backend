@@ -4,7 +4,7 @@ from typing import Optional
 from datetime import datetime
 
 from database import get_db
-from models import KangyurNews
+from models import KagyurNews
 from schemas import NewsCreate, NewsUpdate, NewsPublish
 
 router = APIRouter(
@@ -20,30 +20,30 @@ async def get_all_news(
     db: Session = Depends(get_db)
 ):
     """Get all news articles with filters"""
-    query = db.query(KangyurNews)
+    query = db.query(KagyurNews)
     
     # Apply status filter
     if status == "published":
         query = query.filter(
-            KangyurNews.is_active == True,
-            KangyurNews.published_date.isnot(None)
+            KagyurNews.is_active == True,
+            KagyurNews.published_date.isnot(None)
         )
     elif status == "draft":
         query = query.filter(
-            KangyurNews.published_date.is_(None)
+            KagyurNews.published_date.is_(None)
         )
     
     # Apply search filter
     if search:
         query = query.filter(
-            KangyurNews.english_title.ilike(f"%{search}%") |
-            KangyurNews.tibetan_title.ilike(f"%{search}%") |
-            KangyurNews.english_content.ilike(f"%{search}%") |
-            KangyurNews.tibetan_content.ilike(f"%{search}%")
+            KagyurNews.english_title.ilike(f"%{search}%") |
+            KagyurNews.tibetan_title.ilike(f"%{search}%") |
+            KagyurNews.english_content.ilike(f"%{search}%") |
+            KagyurNews.tibetan_content.ilike(f"%{search}%")
         )
     
     # Order by created_at descending (newest first)
-    query = query.order_by(KangyurNews.created_at.desc())
+    query = query.order_by(KagyurNews.created_at.desc())
     
     # Pagination
     total = query.count()
@@ -63,7 +63,7 @@ async def get_news_details(
     db: Session = Depends(get_db)
 ):
     """Get specific news article for editing"""
-    news = db.query(KangyurNews).filter(KangyurNews.id == news_id).first()
+    news = db.query(KagyurNews).filter(KagyurNews.id == news_id).first()
     if not news:
         raise HTTPException(status_code=404, detail="News article not found")
     
@@ -75,7 +75,7 @@ async def create_news(
     db: Session = Depends(get_db)
 ):
     """Create new news article"""
-    news = KangyurNews(
+    news = KagyurNews(
         tibetan_title=news_data.tibetan_title,
         english_title=news_data.english_title,
         tibetan_content=news_data.tibetan_content,
@@ -99,7 +99,7 @@ async def update_news(
     db: Session = Depends(get_db)
 ):
     """Update news article"""
-    news = db.query(KangyurNews).filter(KangyurNews.id == news_id).first()
+    news = db.query(KagyurNews).filter(KagyurNews.id == news_id).first()
     if not news:
         raise HTTPException(status_code=404, detail="News article not found")
     
@@ -119,7 +119,7 @@ async def delete_news(
     db: Session = Depends(get_db)
 ):
     """Delete news article"""
-    news = db.query(KangyurNews).filter(KangyurNews.id == news_id).first()
+    news = db.query(KagyurNews).filter(KagyurNews.id == news_id).first()
     if not news:
         raise HTTPException(status_code=404, detail="News article not found")
     
@@ -135,7 +135,7 @@ async def publish_news(
     db: Session = Depends(get_db)
 ):
     """Publish news article"""
-    news = db.query(KangyurNews).filter(KangyurNews.id == news_id).first()
+    news = db.query(KagyurNews).filter(KagyurNews.id == news_id).first()
     if not news:
         raise HTTPException(status_code=404, detail="News article not found")
     
@@ -155,7 +155,7 @@ async def unpublish_news(
     db: Session = Depends(get_db)
 ):
     """Unpublish news article"""
-    news = db.query(KangyurNews).filter(KangyurNews.id == news_id).first()
+    news = db.query(KagyurNews).filter(KagyurNews.id == news_id).first()
     if not news:
         raise HTTPException(status_code=404, detail="News article not found")
     
@@ -172,13 +172,13 @@ async def unpublish_news(
 @router.get("/news/stats")
 async def get_news_stats(db: Session = Depends(get_db)):
     """Get news statistics"""
-    total_news = db.query(KangyurNews).count()
-    published_news = db.query(KangyurNews).filter(
-        KangyurNews.is_active == True,
-        KangyurNews.published_date.isnot(None)
+    total_news = db.query(KagyurNews).count()
+    published_news = db.query(KagyurNews).filter(
+        KagyurNews.is_active == True,
+        KagyurNews.published_date.isnot(None)
     ).count()
-    draft_news = db.query(KangyurNews).filter(
-        KangyurNews.published_date.is_(None)
+    draft_news = db.query(KagyurNews).filter(
+        KagyurNews.published_date.is_(None)
     ).count()
     
     return {
@@ -194,9 +194,9 @@ async def get_recent_news(
     db: Session = Depends(get_db)
 ):
     """Get recent published news articles"""
-    recent_news = db.query(KangyurNews).filter(
-        KangyurNews.is_active == True,
-        KangyurNews.published_date.isnot(None)
-    ).order_by(KangyurNews.published_date.desc()).limit(limit).all()
+    recent_news = db.query(KagyurNews).filter(
+        KagyurNews.is_active == True,
+        KagyurNews.published_date.isnot(None)
+    ).order_by(KagyurNews.published_date.desc()).limit(limit).all()
     
     return {"recent_news": recent_news}

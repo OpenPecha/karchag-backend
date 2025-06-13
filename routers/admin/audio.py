@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from database import get_db
-from models import KangyurAudio, KagyurText
+from models import KagyurAudio, KagyurText
 from schemas import AudioResponse, AudioCreate, AudioUpdate
 
 router = APIRouter(
@@ -24,23 +24,23 @@ async def get_all_audio(
     db: Session = Depends(get_db)
 ):
     """Get all audio files with text information"""
-    query = db.query(KangyurAudio).join(KagyurText)
+    query = db.query(KagyurAudio).join(KagyurText)
     
     # Apply filters
     if text_id:
-        query = query.filter(KangyurAudio.text_id == text_id)
+        query = query.filter(KagyurAudio.text_id == text_id)
     if narrator:
         query = query.filter(
-            KangyurAudio.narrator_name_english.ilike(f"%{narrator}%") |
-            KangyurAudio.narrator_name_tibetan.ilike(f"%{narrator}%")
+            KagyurAudio.narrator_name_english.ilike(f"%{narrator}%") |
+            KagyurAudio.narrator_name_tibetan.ilike(f"%{narrator}%")
         )
     if language:
-        query = query.filter(KangyurAudio.audio_language == language)
+        query = query.filter(KagyurAudio.audio_language == language)
     if search:
         query = query.filter(
             KagyurText.english_title.ilike(f"%{search}%") |
             KagyurText.tibetan_title.ilike(f"%{search}%") |
-            KangyurAudio.narrator_name_english.ilike(f"%{search}%")
+            KagyurAudio.narrator_name_english.ilike(f"%{search}%")
         )
     
     # Pagination
@@ -65,10 +65,10 @@ async def get_text_audio(
     if not text:
         raise HTTPException(status_code=404, detail="Text not found")
     
-    audio_files = db.query(KangyurAudio).filter(
-        KangyurAudio.text_id == text_id,
-        KangyurAudio.is_active == True
-    ).order_by(KangyurAudio.order_index).all()
+    audio_files = db.query(KagyurAudio).filter(
+        KagyurAudio.text_id == text_id,
+        KagyurAudio.is_active == True
+    ).order_by(KagyurAudio.order_index).all()
     
     return {
         "text": text,
@@ -81,7 +81,7 @@ async def get_audio_details(
     db: Session = Depends(get_db)
 ):
     """Get specific audio details for editing"""
-    audio = db.query(KangyurAudio).filter(KangyurAudio.id == audio_id).first()
+    audio = db.query(KagyurAudio).filter(KagyurAudio.id == audio_id).first()
     if not audio:
         raise HTTPException(status_code=404, detail="Audio not found")
     
@@ -121,7 +121,7 @@ async def create_audio(
         buffer.write(content)
     
     # Create audio record
-    audio_data = KangyurAudio(
+    audio_data = KagyurAudio(
         text_id=text_id,
         audio_url=f"/uploads/audio/{text_id}/{filename}",
         file_name=audio_file.filename,
@@ -149,7 +149,7 @@ async def update_audio_metadata(
     db: Session = Depends(get_db)
 ):
     """Update audio metadata (without file)"""
-    audio = db.query(KangyurAudio).filter(KangyurAudio.id == audio_id).first()
+    audio = db.query(KagyurAudio).filter(KagyurAudio.id == audio_id).first()
     if not audio:
         raise HTTPException(status_code=404, detail="Audio not found")
     
@@ -170,7 +170,7 @@ async def update_audio_file(
     db: Session = Depends(get_db)
 ):
     """Update audio file"""
-    audio = db.query(KangyurAudio).filter(KangyurAudio.id == audio_id).first()
+    audio = db.query(KagyurAudio).filter(KagyurAudio.id == audio_id).first()
     if not audio:
         raise HTTPException(status_code=404, detail="Audio not found")
     
@@ -211,7 +211,7 @@ async def delete_audio(
     db: Session = Depends(get_db)
 ):
     """Delete audio file and record"""
-    audio = db.query(KangyurAudio).filter(KangyurAudio.id == audio_id).first()
+    audio = db.query(KagyurAudio).filter(KagyurAudio.id == audio_id).first()
     if not audio:
         raise HTTPException(status_code=404, detail="Audio not found")
     

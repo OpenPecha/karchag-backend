@@ -79,9 +79,9 @@ class KagyurText(Base):
     chinese_title = Column(String)
     sanskrit_title = Column(String)
     english_title = Column(String)
-    sermon_id = Column(Integer, ForeignKey("sermons.id"))
-    yana_id = Column(Integer, ForeignKey("yanas.id"))
-    translation_type_id = Column(Integer, ForeignKey("translation_types.id"))
+    sermon_id = Column(Integer, ForeignKey("sermons.id"), nullable=True) 
+    yana_id = Column(Integer, ForeignKey("yanas.id"), nullable=True)
+    translation_type_id = Column(Integer, ForeignKey("translation_types.id"), nullable=True)
     order_index = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
@@ -92,16 +92,14 @@ class KagyurText(Base):
     sermon = relationship("Sermon")
     yana = relationship("Yana")
     translation_type = relationship("TranslationType")
-    yeshe_de_spans = relationship("YesheDESpan", back_populates="text",  cascade="all, delete-orphan",
-        lazy="select" ) 
-    audio_files = relationship("KagyurAudio", back_populates="text", cascade="all, delete-orphan",
-        lazy="select")
+    yeshe_de_spans = relationship("YesheDESpan", back_populates="text", cascade="all, delete-orphan", lazy="select")
+    audio_files = relationship("KagyurAudio", back_populates="text", cascade="all, delete-orphan", lazy="select")
 
 class TextSummary(Base):
     __tablename__ = "text_summaries"
     
     id = Column(Integer, primary_key=True, index=True)
-    text_id = Column(Integer, ForeignKey("Kagyur_texts.id"))
+    text_id = Column(Integer, ForeignKey("kagyur_texts.id"))
     translator_homage_english = Column(Text)
     translator_homage_tibetan = Column(Text)
     purpose_english = Column(Text)
@@ -119,17 +117,17 @@ class TextSummary(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    text = relationship("kagyurText", back_populates="text_summary")
+    text = relationship("KagyurText", back_populates="text_summary")
 
 class YesheDESpan(Base):
     __tablename__ = "yeshe_de_spans"
     
     id = Column(Integer, primary_key=True, index=True)
-    text_id = Column(Integer, ForeignKey("Kagyur_texts.id"))
+    text_id = Column(Integer, ForeignKey("kagyur_texts.id"))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    volumes = relationship("Volume", back_populates="yeshe_de_span" ,lazy="select")
+    volumes = relationship("Volume", back_populates="yeshe_de_span", lazy="select")
     text = relationship("KagyurText", back_populates="yeshe_de_spans") 
 
 class Volume(Base):
@@ -146,7 +144,7 @@ class Volume(Base):
     
     yeshe_de_span = relationship("YesheDESpan", back_populates="volumes")
 
-class KangyurAudio(Base):
+class KagyurAudio(Base):
     __tablename__ = "kagyur_audio"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -166,7 +164,7 @@ class KangyurAudio(Base):
     
     text = relationship("KagyurText", back_populates="audio_files")
 
-class KangyurNews(Base):
+class KagyurNews(Base):
     __tablename__ = "kagyur_news"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -179,7 +177,7 @@ class KangyurNews(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-class KangyurVideo(Base):
+class KagyurVideo(Base):
     __tablename__ = "kangyur_video"
     
     id = Column(Integer, primary_key=True, index=True)
@@ -218,3 +216,21 @@ class AuditLog(Base):
     new_values = Column(Text)
     timestamp = Column(DateTime, default=func.now())
     ip_address = Column(String)
+
+class Edition(Base):
+    __tablename__ = "editions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name_english = Column(String, nullable=False)
+    name_tibetan = Column(String)
+    description_english = Column(Text)
+    description_tibetan = Column(Text)
+    abbreviation = Column(String)
+    publisher = Column(String)
+    publication_year = Column(Integer)
+    location = Column(String)
+    total_volumes = Column(Integer)
+    order_index = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

@@ -4,7 +4,7 @@ from typing import Optional
 from datetime import datetime
 
 from database import get_db
-from models import KangyurVideo
+from models import KagyurVideo
 from schemas import VideoCreate, VideoUpdate, VideoPublish
 
 router = APIRouter(
@@ -20,30 +20,30 @@ async def get_all_videos(
     db: Session = Depends(get_db)
 ):
     """Get all video files"""
-    query = db.query(KangyurVideo)
+    query = db.query(KagyurVideo)
     
     # Apply status filter
     if status == "published":
         query = query.filter(
-            KangyurVideo.is_active == True,
-            KangyurVideo.published_date.isnot(None)
+            KagyurVideo.is_active == True,
+            KagyurVideo.published_date.isnot(None)
         )
     elif status == "draft":
         query = query.filter(
-            KangyurVideo.published_date.is_(None)
+            KagyurVideo.published_date.is_(None)
         )
     
     # Apply search filter
     if search:
         query = query.filter(
-            KangyurVideo.english_title.ilike(f"%{search}%") |
-            KangyurVideo.tibetan_title.ilike(f"%{search}%") |
-            KangyurVideo.english_description.ilike(f"%{search}%") |
-            KangyurVideo.tibetan_description.ilike(f"%{search}%")
+            KagyurVideo.english_title.ilike(f"%{search}%") |
+            KagyurVideo.tibetan_title.ilike(f"%{search}%") |
+            KagyurVideo.english_description.ilike(f"%{search}%") |
+            KagyurVideo.tibetan_description.ilike(f"%{search}%")
         )
     
     # Order by created_at descending (newest first)
-    query = query.order_by(KangyurVideo.created_at.desc())
+    query = query.order_by(KagyurVideo.created_at.desc())
     
     # Pagination
     total = query.count()
@@ -63,7 +63,7 @@ async def get_video_details(
     db: Session = Depends(get_db)
 ):
     """Get specific video details for editing"""
-    video = db.query(KangyurVideo).filter(KangyurVideo.id == video_id).first()
+    video = db.query(KagyurVideo).filter(KagyurVideo.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
     
@@ -82,7 +82,7 @@ async def create_video(
     ):
         raise HTTPException(status_code=400, detail="Invalid video URL format")
     
-    video = KangyurVideo(
+    video = KagyurVideo(
         tibetan_title=video_data.tibetan_title,
         english_title=video_data.english_title,
         tibetan_description=video_data.tibetan_description,
@@ -107,7 +107,7 @@ async def update_video(
     db: Session = Depends(get_db)
 ):
     """Update video metadata"""
-    video = db.query(KangyurVideo).filter(KangyurVideo.id == video_id).first()
+    video = db.query(KagyurVideo).filter(KagyurVideo.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
     
@@ -133,7 +133,7 @@ async def delete_video(
     db: Session = Depends(get_db)
 ):
     """Delete video record"""
-    video = db.query(KangyurVideo).filter(KangyurVideo.id == video_id).first()
+    video = db.query(KagyurVideo).filter(KagyurVideo.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
     
@@ -149,7 +149,7 @@ async def publish_video(
     db: Session = Depends(get_db)
 ):
     """Publish video"""
-    video = db.query(KangyurVideo).filter(KangyurVideo.id == video_id).first()
+    video = db.query(KagyurVideo).filter(KagyurVideo.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
     
@@ -169,7 +169,7 @@ async def unpublish_video(
     db: Session = Depends(get_db)
 ):
     """Unpublish video"""
-    video = db.query(KangyurVideo).filter(KangyurVideo.id == video_id).first()
+    video = db.query(KagyurVideo).filter(KagyurVideo.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
     
@@ -186,13 +186,13 @@ async def unpublish_video(
 @router.get("/video/stats")
 async def get_video_stats(db: Session = Depends(get_db)):
     """Get video statistics"""
-    total_videos = db.query(KangyurVideo).count()
-    published_videos = db.query(KangyurVideo).filter(
-        KangyurVideo.is_active == True,
-        KangyurVideo.published_date.isnot(None)
+    total_videos = db.query(KagyurVideo).count()
+    published_videos = db.query(KagyurVideo).filter(
+        KagyurVideo.is_active == True,
+        KagyurVideo.published_date.isnot(None)
     ).count()
-    draft_videos = db.query(KangyurVideo).filter(
-        KangyurVideo.published_date.is_(None)
+    draft_videos = db.query(KagyurVideo).filter(
+        KagyurVideo.published_date.is_(None)
     ).count()
     
     return {
@@ -208,10 +208,10 @@ async def get_recent_videos(
     db: Session = Depends(get_db)
 ):
     """Get recent published videos"""
-    recent_videos = db.query(KangyurVideo).filter(
-        KangyurVideo.is_active == True,
-        KangyurVideo.published_date.isnot(None)
-    ).order_by(KangyurVideo.published_date.desc()).limit(limit).all()
+    recent_videos = db.query(KagyurVideo).filter(
+        KagyurVideo.is_active == True,
+        KagyurVideo.published_date.isnot(None)
+    ).order_by(KagyurVideo.published_date.desc()).limit(limit).all()
     
     return {"recent_videos": recent_videos}
 
@@ -222,13 +222,13 @@ async def search_videos(
     db: Session = Depends(get_db)
 ):
     """Search published videos"""
-    videos = db.query(KangyurVideo).filter(
-        KangyurVideo.is_active == True,
-        KangyurVideo.published_date.isnot(None),
-        (KangyurVideo.english_title.ilike(f"%{q}%") |
-         KangyurVideo.tibetan_title.ilike(f"%{q}%") |
-         KangyurVideo.english_description.ilike(f"%{q}%") |
-         KangyurVideo.tibetan_description.ilike(f"%{q}%"))
-    ).order_by(KangyurVideo.published_date.desc()).limit(limit).all()
+    videos = db.query(KagyurVideo).filter(
+        KagyurVideo.is_active == True,
+        KagyurVideo.published_date.isnot(None),
+        (KagyurVideo.english_title.ilike(f"%{q}%") |
+         KagyurVideo.tibetan_title.ilike(f"%{q}%") |
+         KagyurVideo.english_description.ilike(f"%{q}%") |
+         KagyurVideo.tibetan_description.ilike(f"%{q}%"))
+    ).order_by(KagyurVideo.published_date.desc()).limit(limit).all()
     
     return {"videos": videos, "query": q}

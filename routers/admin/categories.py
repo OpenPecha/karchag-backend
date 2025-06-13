@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
 from models import MainCategory, SubCategory
-from schemas import MainCategoryResponse, SubCategoryResponse, MainCategoryCreate, SubCategoryCreate
+from schemas import MainCategoryResponse, SubCategoryResponse, MainCategoryCreate, SubCategoryCreate,SubCategoryCreateRequest, SubCategoryUpdate
 
 router = APIRouter( tags=["Admin - Categories"])
 
@@ -70,7 +70,7 @@ async def get_subcategories(category_id: int, db: Session = Depends(get_db)):
 @router.post("/categories/{category_id}/subcategories", response_model=SubCategoryResponse, status_code=201)
 async def create_subcategory(
     category_id: int,
-    subcategory_data: SubCategoryCreate,
+    subcategory_data: SubCategoryCreateRequest,
     db: Session = Depends(get_db)
 ):
     """Create a new sub-category"""
@@ -78,7 +78,9 @@ async def create_subcategory(
     if not db.query(MainCategory).filter(MainCategory.id == category_id).first():
         raise HTTPException(status_code=404, detail="Category not found")
     
-    db_subcategory = SubCategory(**subcategory_data.model_dump(), main_category_id=category_id)
+    subcategory_dict = subcategory_data.model_dump()
+    subcategory_dict['main_category_id'] = category_id
+    db_subcategory = SubCategory(**subcategory_dict)
     db.add(db_subcategory)
     db.commit()
     db.refresh(db_subcategory)
@@ -88,7 +90,7 @@ async def create_subcategory(
 async def update_subcategory(
     category_id: int,
     sub_category_id: int,
-    subcategory_data: SubCategoryCreate,
+    subcategory_data: SubCategoryUpdate,  # Changed from SubCategoryCreate
     db: Session = Depends(get_db)
 ):
     """Update a sub-category"""
@@ -100,7 +102,8 @@ async def update_subcategory(
     if not db_subcategory:
         raise HTTPException(status_code=404, detail="Sub-category not found")
     
-    for field, value in subcategory_data.model_dump().items():
+    # Update only the fields from SubCategoryUpdate (excludes main_category_id)
+    for field, value in subcategory_data.model_dump(exclude_unset=True).items():
         setattr(db_subcategory, field, value)
     
     db.commit()

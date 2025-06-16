@@ -24,7 +24,9 @@ Create a .env file in the root directory and add:
 DATABASE_URL=postgresql://username:password@localhost:5432/your_db
 ```
 ## 5️⃣ Start the Development Server
+```
 uvicorn main:app --reload
+```
 
 ### 📌 API Documentation – Swagger UI
 This API follows the OpenAPI specification and provides interactive documentation via Swagger UI.

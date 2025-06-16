@@ -3,8 +3,8 @@
 Follow these steps to set up and run the server:
 ## 1️⃣ Clone the Repo
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/OpenPecha/karchag-backend.git
+cd karchag-backend
 ```
 ## 2️⃣ Create a Virtual Environment
 ```bash

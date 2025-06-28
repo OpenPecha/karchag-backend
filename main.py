@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routers.public import karchag, news, audio, video,auth,edition
-from routers.admin import admin_router
+from routers import categories, news, audio, videos, auth, editions
+
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -28,13 +28,13 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(karchag.router, prefix="/api/karchag", tags=["karchag"])
-app.include_router(news.router, prefix="/api/news", tags=["news"])
+app.include_router(categories.router, prefix="/api/karchag", tags=["karchag"])
+# app.include_router(news.router, prefix="/api/news", tags=["news"])
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
-app.include_router(video.router, prefix="/api/video", tags=["video"])
+# app.include_router(videos.router, prefix="/api/video", tags=["video"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-app.include_router(edition.router, prefix="/api/editions", tags=["edition"])
-app.include_router(admin_router)
+# app.include_router(editions.router, prefix="/api/editions", tags=["edition"])
+
 
 @app.get("/")
 async def root():

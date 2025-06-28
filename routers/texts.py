@@ -1,4 +1,3 @@
-# app/routers/admin/texts.py
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, or_, text
@@ -15,6 +14,8 @@ from schemas import (
 from sqlalchemy.exc import IntegrityError
 
 router = APIRouter( tags=["Admin - Texts"])
+
+
 
 @router.get("/texts", response_model=TextsListResponse)
 async def get_all_texts(
@@ -88,6 +89,51 @@ async def get_text(text_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Text not found")
     
     return text
+
+@router.get("/categories/{category_id}/subcategories/{sub_category_id}/texts/{text_id}",
+            response_model=KagyurTextResponse, tags=["Texts"])
+async def get_text(
+    category_id: int,
+    sub_category_id: int,
+    text_id: int,
+    lang: Optional[str] = Query(None, regex="^(en|tb)$", description="Language preference: en or tb"),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve detailed information about a specific text.
+    
+    Args:
+        category_id: The ID of the main category
+        sub_category_id: The ID of the sub-category
+        text_id: The ID of the text to retrieve
+        lang: Language preference (en=English, tb=Tibetan)
+    
+    Returns:
+        Complete text details including summary, volumes, and audio files
+    
+    Raises:
+        HTTPException: 404 if text not found or doesn't belong to the hierarchy
+    """
+    # Verify the text exists and belongs to the correct hierarchy with eager loading
+    text = db.query(KagyurText).options(
+        joinedload(KagyurText.text_summary),
+        joinedload(KagyurText.sermon),
+        joinedload(KagyurText.yana),
+        joinedload(KagyurText.translation_type),
+        joinedload(KagyurText.yeshe_de_spans).joinedload(YesheDESpan.volumes),
+        joinedload(KagyurText.audio_files)  # Assuming you have audio relationship
+    ).join(SubCategory).filter(
+        KagyurText.id == text_id,
+        KagyurText.sub_category_id == sub_category_id,
+        SubCategory.main_category_id == category_id,
+        KagyurText.is_active == True
+    ).first()
+    
+    if not text:
+        raise HTTPException(status_code=404, detail="Text not found")
+    
+    return text
+
 
 @router.post("/categories/{category_id}/subcategories/{sub_category_id}/texts", response_model=dict)
 async def create_text(
@@ -587,3 +633,71 @@ async def bulk_import_texts(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
+    
+@router.get("/categories/{category_id}/subcategories/{sub_category_id}/texts", tags=["Texts"])
+async def get_texts(
+    category_id: int,
+    sub_category_id: int,
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    limit: int = Query(20, ge=1, le=100, description="Number of items per page (max 100)"),
+    lang: Optional[str] = Query(None, regex="^(en|tb)$", description="Language preference: en or tb"),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve all texts under a specific sub-category with pagination.
+    
+    Args:
+        category_id: The ID of the main category
+        sub_category_id: The ID of the sub-category
+        page: Page number (starts from 1)
+        limit: Number of items per page (max 100)
+        lang: Language preference (en=English, tb=Tibetan)
+    
+    Returns:
+        Paginated list of texts with basic info
+    
+    Raises:
+        HTTPException: 404 if sub-category not found
+    """
+    # Verify sub-category exists and belongs to the category
+    sub_category = db.query(SubCategory).filter(
+        SubCategory.id == sub_category_id,
+        SubCategory.main_category_id == category_id,
+        SubCategory.is_active == True
+    ).first()
+    
+    if not sub_category:
+        raise HTTPException(status_code=404, detail="Sub-category not found")
+    
+    # Calculate offset
+    offset = (page - 1) * limit
+    
+    # Get total count
+    total_count = db.query(func.count(KagyurText.id)).filter(
+        KagyurText.sub_category_id == sub_category_id,
+        KagyurText.is_active == True
+    ).scalar()
+    
+    # Get paginated texts
+    texts = db.query(KagyurText).filter(
+        KagyurText.sub_category_id == sub_category_id,
+        KagyurText.is_active == True
+    ).order_by(KagyurText.order_index).offset(offset).limit(limit).all()
+    
+    # Calculate pagination info
+    total_pages = (total_count + limit - 1) // limit
+    has_next = page < total_pages
+    has_prev = page > 1
+    
+    return {
+        "texts": texts,
+        "pagination": {
+            "current_page": page,
+            "total_pages": total_pages,
+            "total_items": total_count,
+            "items_per_page": limit,
+            "has_next": has_next,
+            "has_prev": has_prev
+        }
+    }
+

@@ -1,19 +1,14 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import HTTPException, status,Request,Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
-
-from database import get_db
 from models import User
-from schemas import LoginRequest, LoginResponse, RefreshResponse, LogoutResponse
-from core.dependencies import get_current_user, get_refresh_token_user
+from schemas import LoginRequest, LoginResponse
+from database import get_db
 from core.security import verify_password, create_access_token, create_refresh_token
 from utils.audit import log_activity
+from sqlalchemy import and_
 
-router = APIRouter( tags=["Authentication"])
-
-@router.post("/login", response_model=LoginResponse)
-async def login(
+async def handle_login(
     request: Request,
     login_data: LoginRequest,
     db: Session = Depends(get_db)
@@ -28,7 +23,7 @@ async def login(
         )
     ).first()
     
-    if not user or not verify_password(login_data.password, user.hashed_password):
+    if not user or not login_data.password or not user.hashed_password or not verify_password(login_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -70,46 +65,3 @@ async def login(
             "expires_in": 3600  # 1 hour in seconds
         }
     )
-
-@router.post("/refresh", response_model=RefreshResponse)
-async def refresh_token(
-    user: User = Depends(get_refresh_token_user)
-):
-    """Refresh access token using refresh token"""
-    
-    user_data = {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "is_admin": user.is_admin
-    }
-    
-    # Generate new access token
-    new_access_token = create_access_token(user_data)
-    
-    return RefreshResponse(
-        access_token=new_access_token,
-        token_type="bearer",
-        expires_in=3600
-    )
-
-@router.post("/logout", response_model=LogoutResponse)
-async def logout(
-    request: Request,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Logout user and log activity"""
-    
-    # Log logout activity
-    log_activity(
-        db=db,
-        user_id=current_user.id,
-        table_name="USERS",
-        record_id=current_user.id,
-        action="LOGOUT",
-        ip_address=request.client.host
-    )
-    
-    return LogoutResponse(message="Logout successful")
-

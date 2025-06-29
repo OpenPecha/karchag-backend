@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models import User
 from schemas import LoginRequest, LoginResponse
-from core.security import verify_password,hash_password, create_access_token, create_refresh_token
+from core.security import hash_password, create_access_token, create_refresh_token
 from utils.audit import log_activity
 
 async def handle_signup(user_data: LoginRequest, db: Session, ip_address: str) -> LoginResponse:
@@ -29,11 +29,15 @@ async def handle_signup(user_data: LoginRequest, db: Session, ip_address: str) -
         hashed_password=password,
         is_active=True,
         is_admin=False,
-        created_at=datetime.now(timezone.utc),
-        last_login=datetime.now(timezone.utc)
+        last_login=datetime.now(timezone.utc),
+        
     )
 
     db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    new_user.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(new_user)
 

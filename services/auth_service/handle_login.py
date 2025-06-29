@@ -31,8 +31,11 @@ async def handle_login(
     
     # Update last login
     user.last_login = datetime.utcnow()
+    current_time = datetime.utcnow()
+    user.updated_at = current_time
     db.commit()
     
+    db.refresh(user)
     # Prepare user data for token creation
     user_data = {
         "id": user.id,

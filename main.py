@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routers import categories, news, audio, videos, auth, editions
+from routers import categories,subcategories, news, audio, videos, auth, editions
 
 
 # Create tables
@@ -28,7 +28,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(categories.router, prefix="/api/karchag", tags=["karchag"])
+app.include_router(categories.router)
+app.include_router(subcategories.router)
 # app.include_router(news.router, prefix="/api/news", tags=["news"])
 app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
 # app.include_router(videos.router, prefix="/api/video", tags=["video"])

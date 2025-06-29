@@ -140,3 +140,63 @@ async def get_specific_audio(
         raise HTTPException(status_code=404, detail="Audio not found")
     
     return AudioResponse.from_orm(audio)
+
+
+@router.get("/categories/{category_id}/subcategories/{sub_category_id}/texts/{text_id}/audio", tags=["Audio"])
+async def get_text_audio(
+    category_id: int,
+    sub_category_id: int,
+    text_id: int,
+    lang: Optional[str] = Query("en", regex="^(en|tb)$"),
+    quality: Optional[str] = Query(None, regex="^(128kbps|320kbps)$"),
+    db: Session = Depends(get_db)
+):
+    """Get all audio files for a specific text"""
+    # Verify the text exists and belongs to the specified category/subcategory
+    text = db.query(KagyurText).filter(
+        KagyurText.id == text_id,
+        KagyurText.sub_category_id == sub_category_id
+    ).first()
+    
+    if not text:
+        raise HTTPException(status_code=404, detail="Text not found")
+    
+    # Verify subcategory belongs to main category
+    subcategory = db.query(SubCategory).filter(
+        SubCategory.id == sub_category_id,
+        SubCategory.main_category_id == category_id
+    ).first()
+    
+    if not subcategory:
+        raise HTTPException(status_code=404, detail="Invalid category/subcategory combination")
+    
+    # Build query for audio files
+    query = db.query(KagyurAudio).filter(
+        KagyurAudio.text_id == text_id,
+        KagyurAudio.is_active == True
+    )
+    
+    # Apply quality filter if specified
+    if quality:
+        query = query.filter(KagyurAudio.audio_quality == quality)
+    
+    audio_files = query.order_by(KagyurAudio.order_index).all()
+    
+    return {"audio_files": [AudioResponse.model_validate(audio) for audio in audio_files]}
+
+@router.get("/audio/{audio_id}", tags=["Audio"])
+async def get_audio_details(
+    audio_id: int,
+    lang: Optional[str] = Query("en", regex="^(en|tb)$"),
+    db: Session = Depends(get_db)
+):
+    """Get specific audio file details and streaming URL"""
+    audio = db.query(KagyurAudio).filter(
+        KagyurAudio.id == audio_id,
+        KagyurAudio.is_active == True
+    ).first()
+    
+    if not audio:
+        raise HTTPException(status_code=404, detail="Audio not found")
+    
+    return AudioResponse.model_validate(audio)

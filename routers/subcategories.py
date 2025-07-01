@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException,  Query
-from sqlalchemy.orm import Session 
-from sqlalchemy.sql import func,and_ 
+from sqlalchemy.orm import Session  
 from typing import List, Optional
 from database import get_db
-from models import MainCategory, SubCategory
+from models import MainCategory, SubCategory,User
 from schemas import ( SubCategoryUpdate,SubCategoryLanguageResponse,SubCategoryResponse,SubCategoryCreateRequest )
+from dependencies.auth import require_admin
 from services.subcategory_service.handleGetSubcategories import handle_get_subcategories
 from services.subcategory_service.handleGetSubCategory import handle_get_subcategory
 import logging
 
-router = APIRouter(prefix="/categories", tags=["Sub-Categories"])
+router = APIRouter( tags=["Sub-Categories"])
 logger = logging.getLogger(__name__)
 
     
-@router.get("/{category_id}/subcategories", response_model=List[SubCategoryLanguageResponse], tags=["Sub-Categories"])
+@router.get("/categories/{category_id}/subcategories", response_model=List[SubCategoryLanguageResponse])
 async def get_subcategories(
     category_id: int,
     lang: Optional[str] = Query(None, regex="^(en|tb)$", description="Language preference: en or tb"),
@@ -21,7 +21,7 @@ async def get_subcategories(
 ):
     return await handle_get_subcategories(category_id, lang, db)
     
-@router.get("/{category_id}/subcategories/{subcategory_id}", response_model=SubCategoryLanguageResponse)
+@router.get("/categories/{category_id}/subcategories/{subcategory_id}", response_model=SubCategoryLanguageResponse)
 async def get_subcategory(
     category_id: int,
     subcategory_id: int,
@@ -30,11 +30,12 @@ async def get_subcategory(
 ):  
     return await handle_get_subcategory(subcategory_id, lang, db)
 
-@router.post("/{category_id}/subcategories", response_model=SubCategoryResponse, status_code=201)
+@router.post("/categories/{category_id}/subcategories", response_model=SubCategoryResponse, status_code=201)
 async def create_subcategory(
     category_id: int,
     subcategory_data: SubCategoryCreateRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
 ):
     """Create a new sub-category"""
     # Verify category exists
@@ -49,11 +50,12 @@ async def create_subcategory(
     db.refresh(db_subcategory)
     return db_subcategory
 
-@router.put("/{category_id}/subcategories/{sub_category_id}", response_model=SubCategoryResponse)
+@router.put("/categories/{category_id}/subcategories/{sub_category_id}", response_model=SubCategoryResponse)
 async def update_subcategory(
     category_id: int,
     sub_category_id: int,
     subcategory_data: SubCategoryUpdate,  # Changed from SubCategoryCreate
+    current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     """Update a sub-category"""
@@ -74,10 +76,11 @@ async def update_subcategory(
     return db_subcategory
 
 
-@router.delete("/{category_id}/subcategories/{sub_category_id}")
+@router.delete("/categories/{category_id}/subcategories/{sub_category_id}")
 async def delete_subcategory(
     category_id: int,
     sub_category_id: int,
+    current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
     """Delete a sub-category"""

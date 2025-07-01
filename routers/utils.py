@@ -9,7 +9,7 @@ from schemas import (MainCategoryResponse, MainCategoryCreate, SubCategoryUpdate
 )
 import logging
 
-router = APIRouter(prefix="/categories", tags=["Categories"])
+router = APIRouter(prefix="/categories", tags=["Utils"])
 logger = logging.getLogger(__name__)
 
 

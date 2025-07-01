@@ -11,7 +11,7 @@ from utils.audit import log_activity
 from services.auth_service.handle_signup import handle_signup
 from services.auth_service.handle_login import handle_login
 
-router = APIRouter( tags=["Authentication"], prefix="/auth")
+router = APIRouter(tags=["Authentication"])
 
 @router.post("/signup", response_model=LoginResponse)
 async def signup(

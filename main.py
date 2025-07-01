@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
-from routers import categories,subcategories, news, audio, videos, auth, editions
-
+from routers import categories, subcategories, news, audio, videos, auth, editions, texts, users
+from routers.lookups import sermons, translation_types
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -28,14 +28,19 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(categories.router)
 app.include_router(subcategories.router)
-# app.include_router(news.router, prefix="/api/news", tags=["news"])
-app.include_router(audio.router, prefix="/api/audio", tags=["audio"])
-# app.include_router(videos.router, prefix="/api/video", tags=["video"])
-app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
-# app.include_router(editions.router, prefix="/api/editions", tags=["edition"])
+app.include_router(texts.router)
+app.include_router(news.router)
+app.include_router(audio.router)
+app.include_router(videos.router)
+app.include_router(editions.router)
+app.include_router(users.router)
 
+# Include lookup routers
+app.include_router(sermons.router, prefix="/api", tags=["sermons"])
+app.include_router(translation_types.router, prefix="/api", tags=["translation-types"])
 
 @app.get("/")
 async def root():
@@ -45,8 +50,6 @@ async def root():
         "docs": "/docs",
         "redoc": "/redoc"
     }
-
-
 
 @app.get("/health")
 async def health_check():

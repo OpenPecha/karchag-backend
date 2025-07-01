@@ -3,12 +3,11 @@ from sqlalchemy.orm import Session
 from typing import  Optional
 from database import get_db
 from models import MainCategory,User
-from dependencies.auth import require_admin
 
 async def handle_get_all_categories(
+    admin_user: User,  # Admin user passed from router
     lang: Optional[str] = Query(None, regex="^(en|tb)$", description="Language preference: en or tb"),
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(require_admin)  # Admin only for inactive categories
+    db: Session = Depends(get_db)
 ):
     """Get all main categories (including inactive) - Admin only"""
     categories = db.query(MainCategory).order_by(MainCategory.order_index).all()

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurAudio, User
+from app.models import KagyurAudio, User
 from fastapi import HTTPException
 
 async def handle_get_audio_details_admin(audio_id: int, current_user: User, db: Session):

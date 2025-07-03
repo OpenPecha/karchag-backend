@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurAudio, User
+from app.models import KagyurAudio, User
 from fastapi import HTTPException
 import os
 from typing import Any

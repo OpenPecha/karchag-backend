@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models import SubCategory, KagyurText, KagyurAudio
-from schemas import AudioResponse, PaginatedResponse
+from app.models import SubCategory, KagyurText, KagyurAudio
+from app.schemas import AudioResponse, PaginatedResponse
 from typing import Optional
 import math
 

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurText, KagyurAudio, User
+from app.models import KagyurText, KagyurAudio, User
 from fastapi import HTTPException
 
 async def handle_get_text_audio_admin(text_id: int, current_user: User, db: Session) -> dict:

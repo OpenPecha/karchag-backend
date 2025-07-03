@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo, User
+from app.models import KagyurVideo, User
 from fastapi import HTTPException
 
 async def handle_get_video_detail_admin(video_id: int, current_user: User, db: Session):

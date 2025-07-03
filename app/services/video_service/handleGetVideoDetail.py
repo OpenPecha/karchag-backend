@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo
-from schemas import VideoResponse
+from app.models import KagyurVideo
+from app.schemas import VideoResponse
 from typing import Optional
 from fastapi import HTTPException
 

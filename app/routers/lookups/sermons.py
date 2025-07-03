@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from database import get_db
-from models import Sermon, User
-from schemas import SermonResponse, SermonCreate
-from dependencies.auth import require_admin
+from app.database import get_db
+from app.models import Sermon, User
+from app.schemas import SermonResponse, SermonCreate
+from app.dependencies.auth import require_admin
 from datetime import datetime
 
 router = APIRouter()

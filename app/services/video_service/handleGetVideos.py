@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo
+from app.models import KagyurVideo
 from typing import Optional
 
 async def handle_get_videos(page: int, limit: int, lang: Optional[str], db: Session) -> dict:

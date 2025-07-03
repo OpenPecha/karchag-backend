@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo, User
-from schemas import VideoCreate
+from app.models import KagyurVideo, User
+from app.schemas import VideoCreate
 from datetime import datetime
 
 async def handle_create_video(video_data: VideoCreate, current_user: User, db: Session):

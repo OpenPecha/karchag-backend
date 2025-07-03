@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo, User
-from schemas import VideoUpdate
+from app.models import KagyurVideo, User
+from app.schemas import VideoUpdate
 from fastapi import HTTPException
 
 async def handle_update_video(video_id: int, video_data: VideoUpdate, current_user: User, db: Session):

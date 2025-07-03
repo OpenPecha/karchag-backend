@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from models import KagyurAudio, KagyurText, User
+from app.models import KagyurAudio, KagyurText, User
 from typing import Optional
 
 async def handle_get_all_audio(

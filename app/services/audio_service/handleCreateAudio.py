@@ -1,6 +1,6 @@
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
-from models import KagyurAudio, KagyurText, User
+from app.models import KagyurAudio, KagyurText, User
 from datetime import datetime
 import os
 

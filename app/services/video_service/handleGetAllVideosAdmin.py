@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo, User
+from app.models import KagyurVideo, User
 from typing import Optional
 
 async def handle_get_all_videos_admin(page: int, limit: int, search: Optional[str], current_user: User, db: Session) -> dict:

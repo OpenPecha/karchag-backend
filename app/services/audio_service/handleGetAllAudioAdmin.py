@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import KagyurAudio, KagyurText, User
+from app.models import KagyurAudio, KagyurText, User
 from typing import Optional
 
 async def handle_get_all_audio_admin(current_user: User, db: Session, page: int = 1, limit: int = 20, text_id: Optional[int] = None, narrator: Optional[str] = None, language: Optional[str] = None, search: Optional[str] = None) -> dict:

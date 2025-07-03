@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import KagyurVideo
-from schemas import VideoResponse
+from app.models import KagyurVideo
+from app.schemas import VideoResponse
 from typing import Optional, List
 
 async def handle_get_latest_videos(limit: int, lang: Optional[str], db: Session) -> list:

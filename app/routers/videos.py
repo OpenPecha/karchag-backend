@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, 
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.database import get_db
-from models import  User
-from schemas import VideoResponse, VideoCreate, VideoUpdate
+from app.models import  User
+from app.schemas import VideoResponse, VideoCreate, VideoUpdate
 from app.dependencies.auth import require_admin
 from app.services.video_service.handleGetVideos import handle_get_videos
 from app.services.video_service.handleGetVideoDetail import handle_get_video_detail

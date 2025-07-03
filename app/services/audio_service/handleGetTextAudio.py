@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models import KagyurText, SubCategory, KagyurAudio
-from schemas import AudioResponse
+from app.models import KagyurText, SubCategory, KagyurAudio
+from app.schemas import AudioResponse
 from typing import Optional
 from fastapi import HTTPException
 

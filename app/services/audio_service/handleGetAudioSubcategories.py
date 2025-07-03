@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models import SubCategory, KagyurText, KagyurAudio
-from schemas import SubCategoryResponse
+from app.models import SubCategory, KagyurText, KagyurAudio
+from app.schemas import SubCategoryResponse
 from typing import Optional, List
 
 async def handle_get_audio_subcategories(category_id: int, lang: Optional[str], db: Session) -> dict:

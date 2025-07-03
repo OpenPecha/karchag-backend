@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from database import get_db
-from models import TranslationType, User
-from schemas import TranslationTypeResponse, TranslationTypeCreate
-from dependencies.auth import require_admin
+from app.database import get_db
+from app.models import TranslationType, User
+from app.schemas import TranslationTypeResponse, TranslationTypeCreate
+from app.dependencies.auth import require_admin
 from datetime import datetime
 
 router = APIRouter(prefix="/translation-types", tags=["translation-types"])

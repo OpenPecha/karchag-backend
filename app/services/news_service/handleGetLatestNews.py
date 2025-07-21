@@ -5,6 +5,7 @@ from typing import Optional, List
 
 async def handle_get_latest_news(limit: int, lang: Optional[str], db: Session) -> list:
     news_list = db.query(KagyurNews).filter(
-        KagyurNews.is_active == True
+        KagyurNews.is_active == True,
+        KagyurNews.publication_status == 'published'
     ).order_by(KagyurNews.published_date.desc()).limit(limit).all()
-    return news_list 
+    return news_list

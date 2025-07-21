@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from enum import Enum
 from app.database import Base
 
 class MainCategory(Base):
@@ -164,6 +165,11 @@ class KagyurAudio(Base):
     
     text = relationship("KagyurText", back_populates="audio_files")
 
+class PublicationStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    UNPUBLISHED = "unpublished"
+
 class KagyurNews(Base):
     __tablename__ = "kagyur_news"
     
@@ -172,7 +178,8 @@ class KagyurNews(Base):
     english_title = Column(String)
     tibetan_content = Column(Text)
     english_content = Column(Text)
-    published_date = Column(DateTime(timezone=True))
+    publication_status = Column(String)
+    published_date = Column(DateTime(timezone=True), nullable=True)  # Set when published
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

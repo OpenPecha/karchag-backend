@@ -96,7 +96,7 @@ async def delete_news(
     """Delete news article - Admin only"""
     return await handle_delete_news(news_id=news_id, current_user=current_user, db=db)
 
-@router.post("/news/{news_id}/publish", response_model=NewsResponse)
+@router.patch("/news/{news_id}/publish", response_model=NewsResponse)
 async def publish_news(
     news_id: int,
     publish_data: NewsPublish,
@@ -106,7 +106,7 @@ async def publish_news(
     """Publish a news article - Admin only"""
     return await handle_publish_news(news_id=news_id, publish_data=publish_data, current_user=current_user, db=db)
 
-@router.post("/news/{news_id}/unpublish", response_model=NewsResponse)
+@router.patch("/news/{news_id}/unpublish", response_model=NewsResponse)
 async def unpublish_news(
     news_id: int,
     unpublish_data: NewsUnpublish,

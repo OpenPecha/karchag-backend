@@ -46,7 +46,7 @@ async def get_text(text_id: int, db: Session = Depends(get_db)):
     return text
 
 @router.get("/categories/{category_id}/subcategories/{sub_category_id}/texts/",
-            response_model=TextsListResponse, tags=["Texts"])
+            response_model=TextsListResponse)
 async def fetch_text(
     category_id: int,
     sub_category_id: int,

@@ -3,12 +3,14 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
 from app.models import KagyurAudio, User
-from app.schemas import AudioResponse
+from app.schemas import AudioResponse, AudioUpdate
 from app.dependencies.auth import require_admin
 from app.services.audio_service.handleGetAudioDetails import handle_get_audio_details
 from app.services.audio_service.handleGetAudioCategories import handle_get_audio_categories
 from app.services.audio_service.handleGetTextAudio import handle_get_text_audio
 from app.services.audio_service.handleCreateAudio import handle_create_audio
+from app.services.audio_service.handleUpdateAudio import handle_update_audio
+from app.services.audio_service.handleUpdateAudioFile import handle_update_audio_file
 from app.services.audio_service.handleDeleteAudio import handle_delete_audio
 
 router = APIRouter(tags=["audio"])
@@ -47,6 +49,12 @@ async def list_audio(
         "total_pages": (total + limit - 1) // limit
     }
 
+# GET /audio/categories
+@router.get("/audio/categories")
+async def list_audio_categories(lang: Optional[str] = Query("en", regex="^(en|tb)$"), db: Session = Depends(get_db)):
+    """List audio categories (public)"""
+    return await handle_get_audio_categories(lang=lang, db=db)
+
 # GET /audio/{audio_id}
 @router.get("/audio/{audio_id}")
 async def get_audio(audio_id: int, lang: Optional[str] = Query("en", regex="^(en|tb)$"), db: Session = Depends(get_db)):
@@ -65,12 +73,6 @@ async def get_text_audio(
 ):
     """Get all audio files for a specific text (public)"""
     return await handle_get_text_audio(category_id=category_id, sub_category_id=sub_category_id, text_id=text_id, lang=lang, quality=quality, db=db)
-
-# GET /audio/categories
-@router.get("/audio/categories")
-async def list_audio_categories(lang: Optional[str] = Query("en", regex="^(en|tb)$"), db: Session = Depends(get_db)):
-    """List audio categories (public)"""
-    return await handle_get_audio_categories(lang=lang, db=db)
 
 # POST /audio (admin only)
 @router.post("/audio", response_model=AudioResponse, status_code=status.HTTP_201_CREATED)
@@ -94,6 +96,46 @@ async def create_audio(
         audio_quality=audio_quality,
         audio_language=audio_language,
         order_index=order_index,
+        current_user=current_user,
+        db=db
+    )
+
+# PUT /audio/{audio_id} (admin only)
+@router.put("/audio/{audio_id}", response_model=AudioResponse)
+async def update_audio(
+    audio_id: int,
+    narrator_name_english: Optional[str] = Form(None),
+    narrator_name_tibetan: Optional[str] = Form(None),
+    audio_quality: Optional[str] = Form(None),
+    audio_language: Optional[str] = Form(None),
+    order_index: Optional[int] = Form(None),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Update audio metadata (admin only)"""
+    return await handle_update_audio(
+        audio_id=audio_id,
+        narrator_name_english=narrator_name_english,
+        narrator_name_tibetan=narrator_name_tibetan,
+        audio_quality=audio_quality,
+        audio_language=audio_language,
+        order_index=order_index,
+        current_user=current_user,
+        db=db
+    )
+
+# PUT /audio/{audio_id}/file (admin only)
+@router.put("/audio/{audio_id}/file")
+async def update_audio_file(
+    audio_id: int,
+    audio_file: UploadFile = File(...),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Update audio file (admin only)"""
+    return await handle_update_audio_file(
+        audio_id=audio_id,
+        audio_file=audio_file,
         current_user=current_user,
         db=db
     )

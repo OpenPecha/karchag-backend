@@ -39,7 +39,8 @@ from .media import (
 
 # News schemas
 from .news import (
-    NewsBase, NewsCreate, NewsUpdate, NewsPublish, NewsResponse, NewsPaginatedResponse
+    PublicationStatus, NewsBase, NewsCreate, NewsUpdate, NewsPublish, NewsUnpublish, 
+    NewsResponse, NewsPaginatedResponse
 )
 
 # User schemas
@@ -99,7 +100,8 @@ __all__ = [
     "VideoBase", "VideoCreate", "VideoUpdate", "VideoPublish", "VideoResponse", "VideoPaginatedResponse",
     
     # News
-    "NewsBase", "NewsCreate", "NewsUpdate", "NewsPublish", "NewsResponse", "NewsPaginatedResponse",
+    "PublicationStatus", "NewsBase", "NewsCreate", "NewsUpdate", "NewsPublish", "NewsUnpublish", 
+    "NewsResponse", "NewsPaginatedResponse",
     
     # User
     "UserBase", "UserCreate", "UserUpdate", "UserResponse", "PaginatedUsersResponse",

@@ -1,0 +1,36 @@
+# Test files and directories
+
+# Test result files - EXCLUDE these
+test-results/
+test-reports/
+coverage-reports/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Test logs - EXCLUDE these  
+test*.log
+testing.log
+pytest.log
+
+# Local test configuration overrides - EXCLUDE these
+tests/local_config.py
+tests/.env.test.local
+test.db
+test.sqlite
+
+# Performance test outputs - EXCLUDE these
+benchmark-results/
+load-test-results/
+performance-reports/
+
+# Temporary test files - EXCLUDE these
+temp_test_*
+test_temp_*
+*.tmp
+
+# Test screenshots/artifacts - EXCLUDE these
+test-screenshots/
+test-artifacts/
+test-downloads/

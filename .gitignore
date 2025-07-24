@@ -131,6 +131,24 @@ dmypy.json
 # Debug files
 debug*.py
 
+# Testing exclusions - keep test files but exclude results/artifacts
+test-results/
+test-reports/
+coverage-reports/
+benchmark-results/
+load-test-results/
+performance-reports/
+test-screenshots/
+test-artifacts/
+test-downloads/
+temp_test_*
+test_temp_*
+*.tmp
+tests/local_config.py
+tests/.env.test.local
+test.db
+test.sqlite
+
 # Upload directories
 uploads/
 temp/

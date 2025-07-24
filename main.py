@@ -16,6 +16,7 @@ from app.database import engine
 from app.models import Base
 from app.routers import categories, subcategories, news, audio, videos, auth, editions, texts, users
 from app.routers.lookups import sermons, translation_types, yanas
+from app.routers.utils import search, dashboard, audit
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -48,6 +49,9 @@ app.include_router(audio.router)
 app.include_router(videos.router)
 app.include_router(editions.router)
 app.include_router(users.router)
+app.include_router(search.router)
+app.include_router(dashboard.router)
+app.include_router(audit.router)
 app.include_router(sermons.router)
 app.include_router(translation_types.router)
 app.include_router(yanas.router)

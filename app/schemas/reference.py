@@ -1,6 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
+from enum import Enum
 from .base import TimestampMixin
+
+
+class PublicationStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    UNPUBLISHED = "unpublished"
 
 
 class SermonBase(BaseModel):

@@ -1,7 +1,11 @@
 from pydantic import BaseModel, validator
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from datetime import datetime
 from .base import TimestampMixin, PaginatedResponse
+from .reference import PublicationStatus
+
+if TYPE_CHECKING:
+    from . import VideoResponse
 
 
 class AudioBase(BaseModel):
@@ -54,6 +58,7 @@ class VideoBase(BaseModel):
 
 class VideoCreate(VideoBase):
     published_date: Optional[datetime] = None
+    publication_status: Optional[PublicationStatus] = PublicationStatus.DRAFT
     is_active: Optional[bool] = True
 
 
@@ -64,6 +69,7 @@ class VideoUpdate(BaseModel):
     english_description: Optional[str] = None
     video_url: Optional[str] = None
     published_date: Optional[datetime] = None
+    publication_status: Optional[PublicationStatus] = None
     is_active: Optional[bool] = None
     
     @validator('video_url')
@@ -74,12 +80,19 @@ class VideoUpdate(BaseModel):
 
 
 class VideoPublish(BaseModel):
-    published_date: datetime
+    published_date: Optional[datetime] = None
+
+
+class VideoPublishResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional["VideoResponse"] = None
 
 
 class VideoResponse(VideoBase, TimestampMixin):
     id: int
     published_date: Optional[datetime] = None
+    publication_status: PublicationStatus
     is_active: bool
     
     class Config:

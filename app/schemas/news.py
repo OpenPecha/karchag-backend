@@ -1,14 +1,8 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
-from enum import Enum
 from .base import TimestampMixin, PaginatedResponse
-
-
-class PublicationStatus(str, Enum):
-    DRAFT = "draft"
-    PUBLISHED = "published"
-    UNPUBLISHED = "unpublished"
+from .reference import PublicationStatus
 
 
 class NewsBase(BaseModel):

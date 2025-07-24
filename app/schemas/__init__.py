@@ -34,7 +34,7 @@ from .texts import (
 # Media schemas
 from .media import (
     AudioBase, AudioCreate, AudioUpdate, AudioResponse, AudioPaginatedResponse,
-    VideoBase, VideoCreate, VideoUpdate, VideoPublish, VideoResponse, VideoPaginatedResponse
+    VideoBase, VideoCreate, VideoUpdate, VideoPublish, VideoPublishResponse, VideoResponse, VideoPaginatedResponse
 )
 
 # News schemas
@@ -73,43 +73,32 @@ def _resolve_forward_refs():
 _resolve_forward_refs()
 
 __all__ = [
-    # Base
-    "TimestampMixin", "PaginationResponse", "PaginatedResponse",
+    # Base schemas
+    "BaseResponse", "TimestampMixin", "PaginatedResponse",
     
-    # Reference
-    "SermonBase", "SermonCreate", "SermonResponse",
-    "YanaBase", "YanaCreate", "YanaResponse",
-    "TranslationTypeBase", "TranslationTypeCreate", "TranslationTypeResponse",
-    "EditionBase", "EditionCreate", "EditionUpdate", "EditionResponse", "EditionPaginatedResponse",
+    # Reference schemas
+    "PublicationStatus",
     
-    # Category
-    "MainCategoryBase", "MainCategoryCreate", "MainCategoryUpdate", "MainCategoryResponse",
-    "MainCategoryWithSubCategories",
-    "SubCategoryBase", "SubCategoryCreate", "SubCategoryCreateRequest", "SubCategoryUpdate",
-    "SubCategoryResponse", "SubCategoryWithTexts","MainCategoryLanguageResponse","SubCategoryLanguageResponse",
+    # Auth schemas
+    "UserBase", "UserCreate", "UserUpdate", "UserResponse", "LoginRequest", "LoginResponse",
+    "Token", "TokenData", "UserPaginatedResponse",
     
-    # Text
-    "VolumeBase", "VolumeCreate", "VolumeUpdate", "VolumeResponse",
-    "YesheDESpanBase", "YesheDESpanCreate", "YesheDESpanUpdate", "YesheDESpanResponse",
-    "TextSummaryBase", "TextSummaryCreate", "TextSummaryUpdate", "TextSummaryResponse",
-    "KagyurTextBase", "KagyurTextCreate", "KagyurTextCreateRequest", "KagyurTextUpdate",
-    "KagyurTextResponse",
+    # Category schemas
+    "CategoryBase", "CategoryCreate", "CategoryUpdate", "CategoryResponse",
+    "SubcategoryBase", "SubcategoryCreate", "SubcategoryUpdate", "SubcategoryResponse",
+    "CategoryWithSubcategoriesResponse", "CategoryPaginatedResponse",
     
-    # Media
+    # Text schemas
+    "TextBase", "TextCreate", "TextUpdate", "TextResponse", "TextDetailResponse", 
+    "AuthorResponse", "EditionResponse", "TextWithRelationsResponse", "TextPaginatedResponse",
+    
+    # Media schemas
     "AudioBase", "AudioCreate", "AudioUpdate", "AudioResponse", "AudioPaginatedResponse",
-    "VideoBase", "VideoCreate", "VideoUpdate", "VideoPublish", "VideoResponse", "VideoPaginatedResponse",
+    "VideoBase", "VideoCreate", "VideoUpdate", "VideoPublish", "VideoPublishResponse", "VideoResponse", "VideoPaginatedResponse",
     
-    # News
-    "PublicationStatus", "NewsBase", "NewsCreate", "NewsUpdate", "NewsPublish", "NewsUnpublish", 
-    "NewsResponse", "NewsPaginatedResponse",
+    # News schemas
+    "NewsBase", "NewsCreate", "NewsUpdate", "NewsResponse", "NewsPaginatedResponse",
     
-    # User
-    "UserBase", "UserCreate", "UserUpdate", "UserResponse", "PaginatedUsersResponse",
-    
-    # Auth
-    "LoginRequest", "LoginResponse", "RefreshResponse", "LogoutResponse",
-    
-    # Search
-    "SearchRequest", "SearchSuggestionResponse", "TextsListResponse",
-    "FilterOptionsResponse", "KarchagStatsResponse"
+    # Search schemas  
+    "SearchResult", "SearchResponse"
 ]

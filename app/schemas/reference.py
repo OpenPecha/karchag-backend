@@ -33,7 +33,7 @@ class YanaCreate(YanaBase):
     pass
 
 
-class YanaResponse(TimestampMixin, BaseModel):
+class YanaResponse(YanaBase, TimestampMixin):
     id: int
     model_config = ConfigDict(from_attributes=True)
 

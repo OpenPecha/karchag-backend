@@ -23,23 +23,6 @@ async def get_sermons(
     
     return sermons
 
-@router.get("/sermons/{sermon_id}", response_model=SermonResponse)
-async def get_sermon_detail(
-    sermon_id: int,
-    lang: Optional[str] = Query("en", regex="^(en|tb)$"),
-    db: Session = Depends(get_db)
-):
-    """Get specific sermon detail"""
-    sermon = db.query(Sermon).filter(
-        Sermon.id == sermon_id,
-        Sermon.is_active == True
-    ).first()
-    
-    if not sermon:
-        raise HTTPException(status_code=404, detail="Sermon not found")
-    
-    return sermon
-
 # ==================== ADMIN ENDPOINTS ====================
 
 @router.get("/sermons/all", tags=["Sermon Management"])
@@ -59,6 +42,23 @@ async def get_sermon_detail_admin(
 ):
     """Get specific sermon detail for editing - Admin only"""
     sermon = db.query(Sermon).filter(Sermon.id == sermon_id).first()
+    if not sermon:
+        raise HTTPException(status_code=404, detail="Sermon not found")
+    
+    return sermon
+
+@router.get("/sermons/{sermon_id}", response_model=SermonResponse)
+async def get_sermon_detail(
+    sermon_id: int,
+    lang: Optional[str] = Query("en", regex="^(en|tb)$"),
+    db: Session = Depends(get_db)
+):
+    """Get specific sermon detail"""
+    sermon = db.query(Sermon).filter(
+        Sermon.id == sermon_id,
+        Sermon.is_active == True
+    ).first()
+    
     if not sermon:
         raise HTTPException(status_code=404, detail="Sermon not found")
     

@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
 from app.models import Base
 from app.routers import categories, subcategories, news, audio, videos, auth, editions, texts, users
-from app.routers.lookups import sermons, translation_types
+from app.routers.lookups import sermons, translation_types, yanas
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -50,6 +50,7 @@ app.include_router(editions.router)
 app.include_router(users.router)
 app.include_router(sermons.router)
 app.include_router(translation_types.router)
+app.include_router(yanas.router)
 
 @app.get("/")
 async def root():

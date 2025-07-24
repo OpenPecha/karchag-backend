@@ -15,6 +15,16 @@ from app.services.edition_service.handleDeleteEdition import handle_delete_editi
 
 router = APIRouter(tags=["editions"])
 
+# ==================== SPECIFIC ROUTES (must come before parameterized routes) ====================
+
+@router.get("/editions/all", tags=["Edition Management"])
+async def get_all_editions_admin(
+    current_user: User = Depends(require_admin),  # Admin only
+    db: Session = Depends(get_db)
+):
+    """🔒 Get all editions (including inactive) - Admin only"""
+    return await handle_get_all_editions_admin(current_user=current_user, db=db)
+
 # ==================== PUBLIC ENDPOINTS ====================
 
 @router.get("/editions", response_model=List[EditionResponse])
@@ -22,7 +32,7 @@ async def get_editions(
     lang: Optional[str] = Query("en", regex="^(en|tb)$"),
     db: Session = Depends(get_db)
 ):
-    """Get all active editions"""
+    """🌍 Get all active editions"""
     return await handle_get_editions(lang=lang, db=db)
 
 @router.get("/editions/{edition_id}", response_model=EditionResponse)
@@ -31,27 +41,10 @@ async def get_edition_detail(
     lang: Optional[str] = Query("en", regex="^(en|tb)$"),
     db: Session = Depends(get_db)
 ):
-    """Get specific edition detail"""
+    """🌍 Get specific edition detail"""
     return await handle_get_edition_detail(edition_id=edition_id, lang=lang, db=db)
 
 # ==================== ADMIN ENDPOINTS ====================
-
-@router.get("/editions/all", tags=["Edition Management"])
-async def get_all_editions_admin(
-    current_user: User = Depends(require_admin),  # Admin only
-    db: Session = Depends(get_db)
-):
-    """Get all editions (including inactive) - Admin only"""
-    return await handle_get_all_editions_admin(current_user=current_user, db=db)
-
-@router.get("/editions/{edition_id}/details", tags=["Edition Management"])
-async def get_edition_detail_admin(
-    edition_id: int,
-    current_user: User = Depends(require_admin),  # Admin only
-    db: Session = Depends(get_db)
-):
-    """Get specific edition detail for editing - Admin only"""
-    return await handle_get_edition_detail_admin(edition_id=edition_id, current_user=current_user, db=db)
 
 @router.post("/editions", response_model=EditionResponse, status_code=status.HTTP_201_CREATED, tags=["Edition Management"])
 async def create_edition(
@@ -59,8 +52,17 @@ async def create_edition(
     current_user: User = Depends(require_admin),  # Admin only
     db: Session = Depends(get_db)
 ):
-    """Create new edition - Admin only"""
+    """🔒 Create new edition - Admin only"""
     return await handle_create_edition(edition_data=edition_data, current_user=current_user, db=db)
+
+@router.get("/editions/{edition_id}/details", tags=["Edition Management"])
+async def get_edition_detail_admin(
+    edition_id: int,
+    current_user: User = Depends(require_admin),  # Admin only
+    db: Session = Depends(get_db)
+):
+    """🔒 Get specific edition detail for editing - Admin only"""
+    return await handle_get_edition_detail_admin(edition_id=edition_id, current_user=current_user, db=db)
 
 @router.put("/editions/{edition_id}", response_model=EditionResponse, tags=["Edition Management"])
 async def update_edition(
@@ -69,7 +71,7 @@ async def update_edition(
     current_user: User = Depends(require_admin),  # Admin only
     db: Session = Depends(get_db)
 ):
-    """Update edition - Admin only"""
+    """🔒 Update edition - Admin only"""
     return await handle_update_edition(edition_id=edition_id, edition_data=edition_data, current_user=current_user, db=db)
 
 @router.delete("/editions/{edition_id}", tags=["Edition Management"])
@@ -78,5 +80,5 @@ async def delete_edition(
     current_user: User = Depends(require_admin),  # Admin only
     db: Session = Depends(get_db)
 ):
-    """Delete edition - Admin only"""
+    """🔒 Delete edition - Admin only"""
     return await handle_delete_edition(edition_id=edition_id, current_user=current_user, db=db)
